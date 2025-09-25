@@ -24,10 +24,10 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Terraform Init
-        run: terraform -chdir=infrastructure/eks init
+        run: terraform -chdir=ec2 init
 
       - name: Terraform Plan
-        run: terraform -chdir=infrastructure/eks plan -var-file=../perf.tfvars
+        run: terraform -chdir=ec2 plan -var-file=perf.tfvars
 
       - name: Terraform Apply
-        run: terraform -chdir=infrastructure/eks apply -var-file=../perf.tfvars -auto-approve
+        run: terraform -chdir=ec2 apply -var-file=perf.tfvars -auto-approve
