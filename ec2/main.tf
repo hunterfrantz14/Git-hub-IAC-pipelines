@@ -10,7 +10,7 @@ data "aws_subnets" "default" {
 
   filter {
     name   = "availability-zone"
-    values = ["us-east-1e", "us-east-1a", "us-east-1b"]
+    values = ["us-east-1a"]
   }
 }
 
@@ -19,15 +19,10 @@ data "aws_security_group" "default" {
   vpc_id = data.aws_vpc.default.id
 }
 
-resource "random_integer" "az_index" {
-  min = 0
-  max = length(data.aws_subnets.default.ids) - 1
-}
-
 resource "aws_instance" "this" {
   ami                    = var.ami_id
   instance_type          = var.instance_type
-  subnet_id              = data.aws_subnets.default.ids[random_integer.az_index.result]
+  subnet_id              = data.aws_subnets.default.ids[0]
   vpc_security_group_ids = [data.aws_security_group.default.id]
 
   tags = merge(
