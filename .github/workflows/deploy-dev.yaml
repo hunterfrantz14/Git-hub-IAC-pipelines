@@ -31,3 +31,4 @@ jobs:
 
       - name: Terraform Apply
         run: terraform -chdir=ec2 apply -var-file=dev.tfvars -auto-approve
+# trigger
