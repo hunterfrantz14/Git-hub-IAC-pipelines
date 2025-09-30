@@ -1,0 +1,25 @@
+name: Deploy Production Infrastructure
+
+on:
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        module: [ec2, s3]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Init
+        run: terraform -chdir=infrastructure/${{ matrix.module }} init
+
+      - name: Apply
+        run: terraform -chdir=infrastructure/${{ matrix.module }} apply -auto-approve -var-file="prod.tfvars"
