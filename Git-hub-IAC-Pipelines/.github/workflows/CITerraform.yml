@@ -5,19 +5,12 @@ on:
     branches:
       - main
     paths:
-      - 'infrastructure/**'
+      - 'infrastructure/**/*.tf'
 
 jobs:
-  terraform-deploy:
+  terraform:
+    name: Terraform - EC2 and S3
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        folder: [ec2, s3]
-
-    defaults:
-      run:
-        shell: bash
-        working-directory: infrastructure/${{ matrix.folder }}
 
     steps:
       - name: Checkout repo
@@ -28,22 +21,55 @@ jobs:
         with:
           terraform_version: 1.5.7
 
-      - name: Terraform Format Check
+      ################################
+      # EC2 MODULE
+      ################################
+
+      - name: Terraform Fmt - EC2
         run: terraform fmt -check
+        working-directory: infrastructure/ec2
 
-      - name: Terraform Init
+      - name: Terraform Init - EC2
         run: terraform init
+        working-directory: infrastructure/ec2
 
-      - name: Terraform Validate
+      - name: Terraform Validate - EC2
         run: terraform validate
+        working-directory: infrastructure/ec2
 
-      - name: Terraform Plan
+      - name: Terraform Plan - EC2
         run: terraform plan -var-file="dev.tfvars"
+        working-directory: infrastructure/ec2
 
-      - name: Terraform Apply
+      - name: Terraform Apply - EC2
         run: terraform apply -auto-approve -var-file="dev.tfvars"
+        working-directory: infrastructure/ec2
 
-        # Optional: include these if using AWS creds in GitHub secrets
+      ################################
+      # S3 MODULE
+      ################################
+
+      - name: Terraform Fmt - S3
+        run: terraform fmt -check
+        working-directory: infrastructure/s3
+
+      - name: Terraform Init - S3
+        run: terraform init
+        working-directory: infrastructure/s3
+
+      - name: Terraform Validate - S3
+        run: terraform validate
+        working-directory: infrastructure/s3
+
+      - name: Terraform Plan - S3
+        run: terraform plan -var-file="dev.tfvars"
+        working-directory: infrastructure/s3
+
+      - name: Terraform Apply - S3
+        run: terraform apply -auto-approve -var-file="dev.tfvars"
+        working-directory: infrastructure/s3
+
+        # Optional if using AWS credentials from GitHub Secrets
         # env:
         #   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         #   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
