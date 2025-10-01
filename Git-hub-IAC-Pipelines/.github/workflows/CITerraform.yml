@@ -1,70 +1,68 @@
-name: CI - Terraform Deploy (EC2 + S3)
+name: CI - Terraform All-in-One
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'infrastructure/**/*.tf'
+      - 'infrastructure/**.tf'
 
 jobs:
   terraform:
-    name: Terraform - EC2 and S3 Combined
+    name: Terraform - EC2 + S3 Combined
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
+      - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.7
 
-      ################################
-      # EC2 MODULE
-      ################################
-
-      - name: Terraform Format - EC2
+      # ========================
+      # EC2 SECTION
+      # ========================
+      - name: Format - EC2
         run: terraform fmt -check
         working-directory: infrastructure/ec2
 
-      - name: Terraform Init - EC2
+      - name: Init - EC2
         run: terraform init
         working-directory: infrastructure/ec2
 
-      - name: Terraform Validate - EC2
+      - name: Validate - EC2
         run: terraform validate
         working-directory: infrastructure/ec2
 
-      - name: Terraform Plan - EC2
+      - name: Plan - EC2
         run: terraform plan -var-file="dev.tfvars"
         working-directory: infrastructure/ec2
 
-      - name: Terraform Apply - EC2
+      - name: Apply - EC2
         run: terraform apply -auto-approve -var-file="dev.tfvars"
         working-directory: infrastructure/ec2
 
-      ################################
-      # S3 MODULE
-      ################################
-
-      - name: Terraform Format - S3
+      # ========================
+      # S3 SECTION
+      # ========================
+      - name: Format - S3
         run: terraform fmt -check
         working-directory: infrastructure/s3
 
-      - name: Terraform Init - S3
+      - name: Init - S3
         run: terraform init
         working-directory: infrastructure/s3
 
-      - name: Terraform Validate - S3
+      - name: Validate - S3
         run: terraform validate
         working-directory: infrastructure/s3
 
-      - name: Terraform Plan - S3
+      - name: Plan - S3
         run: terraform plan -var-file="dev.tfvars"
         working-directory: infrastructure/s3
 
-      - name: Terraform Apply - S3
+      - name: Apply - S3
         run: terraform apply -auto-approve -var-file="dev.tfvars"
         working-directory: infrastructure/s3
