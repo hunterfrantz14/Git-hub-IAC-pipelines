@@ -1,14 +1,14 @@
-name: CI - Terraform Lint & Validate
+name: CI - Terraform Deploy (EC2 & S3)
 
 on:
-  pull_request:
+  push:
     branches:
       - main
     paths:
-      - 'infrastructure/**.tf'
+      - 'infrastructure/**'
 
 jobs:
-  terraform-ci:
+  terraform-deploy:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -36,3 +36,14 @@ jobs:
 
       - name: Terraform Validate
         run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -var-file="dev.tfvars"
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var-file="dev.tfvars"
+
+        # Optional: include these if using AWS creds in GitHub secrets
+        # env:
+        #   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        #   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
