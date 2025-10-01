@@ -27,13 +27,16 @@ jobs:
         with:
           terraform_version: 1.5.7
 
-      - name: Clean Terraform cache
+      - name: Full Terraform cleanup
         run: |
+          echo "🔥 Removing all Terraform traces"
           rm -rf .terraform
           rm -rf .terraform.lock.hcl
           rm -rf .terraform/modules
           rm -rf .terraform/providers
-          echo "✅ Terraform cache wiped"
+          rm -rf terraform.tfstate
+          rm -rf terraform.tfstate.backup
+          echo "✅ Terraform cleanup complete"
 
       - name: Terraform Init
         run: terraform init
