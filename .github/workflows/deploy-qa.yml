@@ -1,4 +1,4 @@
-name: Deploy Production Infrastructure
+name: Deploy QA Infrastructure
 
 on:
   workflow_dispatch:
@@ -6,7 +6,6 @@ on:
 jobs:
   terraform:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         module: [ec2, s3]
@@ -22,4 +21,4 @@ jobs:
         run: terraform -chdir=infrastructure/${{ matrix.module }} init
 
       - name: Apply
-        run: terraform -chdir=infrastructure/${{ matrix.module }} apply -auto-approve -var-file="prod.tfvars"
+        run: terraform -chdir=infrastructure/${{ matrix.module }} apply -auto-approve -var-file="qa.tfvars"
