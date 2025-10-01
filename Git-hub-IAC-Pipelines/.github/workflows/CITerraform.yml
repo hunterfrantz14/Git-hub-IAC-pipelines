@@ -1,4 +1,4 @@
-name: CI - Terraform Deploy (EC2 & S3)
+name: CI - Terraform Deploy (EC2 + S3)
 
 on:
   push:
@@ -8,8 +8,8 @@ on:
       - 'infrastructure/**/*.tf'
 
 jobs:
-  terraform:
-    name: Terraform - EC2 and S3
+  terraform_deploy:
+    name: Terraform - EC2 and S3 Combined
     runs-on: ubuntu-latest
 
     steps:
@@ -21,11 +21,11 @@ jobs:
         with:
           terraform_version: 1.5.7
 
-      ################################
-      # EC2 MODULE
-      ################################
+      ####################################################
+      # EC2 SECTION
+      ####################################################
 
-      - name: Terraform Fmt - EC2
+      - name: Terraform Format - EC2
         run: terraform fmt -check
         working-directory: infrastructure/ec2
 
@@ -45,11 +45,11 @@ jobs:
         run: terraform apply -auto-approve -var-file="dev.tfvars"
         working-directory: infrastructure/ec2
 
-      ################################
-      # S3 MODULE
-      ################################
+      ####################################################
+      # S3 SECTION
+      ####################################################
 
-      - name: Terraform Fmt - S3
+      - name: Terraform Format - S3
         run: terraform fmt -check
         working-directory: infrastructure/s3
 
@@ -68,8 +68,3 @@ jobs:
       - name: Terraform Apply - S3
         run: terraform apply -auto-approve -var-file="dev.tfvars"
         working-directory: infrastructure/s3
-
-        # Optional if using AWS credentials from GitHub Secrets
-        # env:
-        #   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        #   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
