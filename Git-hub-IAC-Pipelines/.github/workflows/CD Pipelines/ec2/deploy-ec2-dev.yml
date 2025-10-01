@@ -1,0 +1,45 @@
+name: Deploy EC2 - Dev
+
+on:
+  push:
+    paths:
+      - 'infrastructure/ec2/**'
+      - '.github/workflows/CD Pipelines/ec2/deploy-ec2-dev.yml'
+    branches:
+      - main
+
+jobs:
+  terraform:
+    name: 'Terraform Apply - Dev'
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: infrastructure/ec2
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+
+      - name: Clean Terraform cache
+        run: |
+          rm -rf .terraform
+          rm -rf .terraform.lock.hcl
+          rm -rf .terraform/modules
+          rm -rf .terraform/providers
+          echo "✅ Terraform cache wiped"
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan -var-file="dev.tfvars"
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var-file="dev.tfvars"

@@ -1,0 +1,38 @@
+name: CI - Terraform Lint & Validate
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'infrastructure/**.tf'
+
+jobs:
+  terraform-ci:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        folder: [ec2, s3]
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: infrastructure/${{ matrix.folder }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+
+      - name: Terraform Format Check
+        run: terraform fmt -check
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate

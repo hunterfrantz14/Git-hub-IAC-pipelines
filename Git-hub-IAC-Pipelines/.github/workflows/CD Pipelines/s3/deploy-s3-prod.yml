@@ -1,0 +1,37 @@
+name: Deploy S3 - Prod
+
+on:
+  push:
+    paths:
+      - 'infrastructure/s3/**'
+      - '.github/workflows/CD Pipelines/s3/deploy-s3-prod.yml'
+    branches:
+      - main
+
+jobs:
+  terraform:
+    name: 'Terraform Apply - Prod'
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: infrastructure/s3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan -var-file="prod.tfvars"
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var-file="prod.tfvars"
