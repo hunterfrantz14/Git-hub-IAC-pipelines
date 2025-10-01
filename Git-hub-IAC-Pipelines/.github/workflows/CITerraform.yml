@@ -8,7 +8,7 @@ on:
       - 'infrastructure/**/*.tf'
 
 jobs:
-  terraform_deploy:
+  terraform:
     name: Terraform - EC2 and S3 Combined
     runs-on: ubuntu-latest
 
@@ -21,9 +21,9 @@ jobs:
         with:
           terraform_version: 1.5.7
 
-      ####################################################
-      # EC2 SECTION
-      ####################################################
+      ################################
+      # EC2 MODULE
+      ################################
 
       - name: Terraform Format - EC2
         run: terraform fmt -check
@@ -45,9 +45,9 @@ jobs:
         run: terraform apply -auto-approve -var-file="dev.tfvars"
         working-directory: infrastructure/ec2
 
-      ####################################################
-      # S3 SECTION
-      ####################################################
+      ################################
+      # S3 MODULE
+      ################################
 
       - name: Terraform Format - S3
         run: terraform fmt -check
