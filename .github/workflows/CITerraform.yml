@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 name: CI - Terraform Deploy (EC2 + S3 Debug)
 
 on:
@@ -71,3 +72,38 @@ jobs:
       - name: Terraform Apply - S3
         run: terraform apply -auto-approve -var-file="dev.tfvars"
         working-directory: infrastructure/s3
+=======
+name: Terraform CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        module: [ec2, s3]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Init
+        run: terraform -chdir=infrastructure/${{ matrix.module }} init
+
+      - name: Validate
+        run: terraform -chdir=infrastructure/${{ matrix.module }} validate
+
+      - name: Plan
+        run: terraform -chdir=infrastructure/${{ matrix.module }} plan
+>>>>>>> d8865651a6f43ebeda978248e947cfebf5ba959d

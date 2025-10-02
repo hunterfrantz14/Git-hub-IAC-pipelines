@@ -4,13 +4,13 @@ variable "bucket_name" {
 }
 
 variable "acl" {
-  description = "Access Control List"
+  description = "Access control list (e.g., private, public-read)"
   type        = string
   default     = "private"
 }
 
 variable "tags" {
-  description = "Tags to apply"
+  description = "A map of tags to assign to the bucket"
   type        = map(string)
   default     = {}
 }
