@@ -22,13 +22,17 @@ jobs:
         with:
           terraform_version: 1.5.7
 
-      # 🔍 DEBUG: Show all .tf files in repo
-      - name: Print all Terraform files
-        run: find . -name "*.tf"
+      - name: DEBUG: List files in infrastructure
+        run: |
+          echo "Listing everything under infrastructure/"
+          find infrastructure/
 
-      # ========================================================
-      # EC2 Steps
-      # ========================================================
+      - name: DEBUG: Find all Terraform files
+        run: |
+          echo "Searching for .tf files..."
+          find . -name "*.tf"
+          echo "Done listing .tf files."
+
       - name: Terraform Init - EC2
         run: terraform init
         working-directory: infrastructure/ec2
@@ -45,9 +49,6 @@ jobs:
         run: terraform apply -auto-approve -var-file="dev.tfvars"
         working-directory: infrastructure/ec2
 
-      # ========================================================
-      # S3 Steps
-      # ========================================================
       - name: Terraform Init - S3
         run: terraform init
         working-directory: infrastructure/s3
