@@ -1,0 +1,51 @@
+name: Deploy S3 - Dev
+
+on:
+  push:
+    paths:
+      - 'infrastructure/s3/**'
+      - '.github/workflows/CD Pipelines/s3/deploy-s3-dev.yml'
+    branches:
+      - main
+
+jobs:
+  terraform:
+    name: 'Terraform Apply - Dev'
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: infrastructure/s3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+
+      - name: DEBUG: List all .tf files
+        run: |
+          echo "🔍 Listing .tf files in infrastructure/s3:"
+          find . -name "*.tf"
+
+      - name: 🧹 Full Terraform cleanup
+        run: |
+          echo "🔥 Removing all Terraform state & cached modules..."
+          rm -rf .terraform
+          rm -f .terraform.lock.hcl
+          rm -f terraform.tfstate
+          rm -f terraform.tfstate.backup
+          echo "✅ Cleanup complete"
+
+      - name: Terraform Init (fresh modules)
+        run: terraform init -upgrade -no-color
+
+      - name: Terraform Plan
+        run: terraform plan -var-file="dev.tfvars"
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var-file="dev.tfvars"

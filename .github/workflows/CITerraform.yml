@@ -1,0 +1,73 @@
+name: CI - Terraform Deploy (EC2 + S3 Debug)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'infrastructure/**'
+
+jobs:
+  terraform:
+    name: Terraform - EC2 and S3
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+
+      # 🔍 DEBUG: Show file structure and any stale terraform modules
+      - name: DEBUG: List .tf files and folders
+        run: |
+          echo "📂 All .tf files in the repo:"
+          find . -name "*.tf"
+          echo ""
+          echo "📁 Contents of .terraform folder (if any):"
+          ls -R infrastructure/ec2/.terraform || echo "No .terraform directory found"
+
+      # =======================================
+      # EC2 STEPS
+      # =======================================
+
+      - name: Terraform Init - EC2
+        run: terraform init -no-color -input=false -upgrade
+        working-directory: infrastructure/ec2
+        continue-on-error: true
+
+      - name: Terraform Validate - EC2
+        run: terraform validate
+        working-directory: infrastructure/ec2
+
+      - name: Terraform Plan - EC2
+        run: terraform plan -var-file="dev.tfvars"
+        working-directory: infrastructure/ec2
+
+      - name: Terraform Apply - EC2
+        run: terraform apply -auto-approve -var-file="dev.tfvars"
+        working-directory: infrastructure/ec2
+
+      # =======================================
+      # S3 STEPS
+      # =======================================
+
+      - name: Terraform Init - S3
+        run: terraform init
+        working-directory: infrastructure/s3
+
+      - name: Terraform Validate - S3
+        run: terraform validate
+        working-directory: infrastructure/s3
+
+      - name: Terraform Plan - S3
+        run: terraform plan -var-file="dev.tfvars"
+        working-directory: infrastructure/s3
+
+      - name: Terraform Apply - S3
+        run: terraform apply -auto-approve -var-file="dev.tfvars"
+        working-directory: infrastructure/s3
