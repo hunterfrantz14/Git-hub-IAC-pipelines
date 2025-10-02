@@ -1,109 +1,86 @@
-<<<<<<< HEAD
-name: CI - Terraform Deploy (EC2 + S3 Debug)
-
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'infrastructure/**'
-
-jobs:
-  terraform:
-    name: Terraform - EC2 and S3
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.5.7
-
-      # 🔍 DEBUG: Show file structure and any stale terraform modules
-      - name: DEBUG: List .tf files and folders
-        run: |
-          echo "📂 All .tf files in the repo:"
-          find . -name "*.tf"
-          echo ""
-          echo "📁 Contents of .terraform folder (if any):"
-          ls -R infrastructure/ec2/.terraform || echo "No .terraform directory found"
-
-      # =======================================
-      # EC2 STEPS
-      # =======================================
-
-      - name: Terraform Init - EC2
-        run: terraform init -no-color -input=false -upgrade
-        working-directory: infrastructure/ec2
-        continue-on-error: true
-
-      - name: Terraform Validate - EC2
-        run: terraform validate
-        working-directory: infrastructure/ec2
-
-      - name: Terraform Plan - EC2
-        run: terraform plan -var-file="dev.tfvars"
-        working-directory: infrastructure/ec2
-
-      - name: Terraform Apply - EC2
-        run: terraform apply -auto-approve -var-file="dev.tfvars"
-        working-directory: infrastructure/ec2
-
-      # =======================================
-      # S3 STEPS
-      # =======================================
-
-      - name: Terraform Init - S3
-        run: terraform init
-        working-directory: infrastructure/s3
-
-      - name: Terraform Validate - S3
-        run: terraform validate
-        working-directory: infrastructure/s3
-
-      - name: Terraform Plan - S3
-        run: terraform plan -var-file="dev.tfvars"
-        working-directory: infrastructure/s3
-
-      - name: Terraform Apply - S3
-        run: terraform apply -auto-approve -var-file="dev.tfvars"
-        working-directory: infrastructure/s3
-=======
 name: Terraform CI
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
     branches:
+      - dev
+      - qa
       - main
+  pull_request:
+    branches:
+      - dev
+      - qa
+      - main
+  workflow_dispatch:
 
 jobs:
-  terraform:
+  terraform-ci:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        module: [ec2, s3]
+    env:
+      TF_VERSION: 1.5.7
+      AWS_REGION: us-east-1
+      TFVARS: dev.tfvars  # Default fallback
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: 🔧 Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
 
-      - name: Init
-        run: terraform -chdir=infrastructure/${{ matrix.module }} init
+      - name: 🔐 Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Validate
-        run: terraform -chdir=infrastructure/${{ matrix.module }} validate
+      - name: 🧹 Remove all Terraform caches
+        run: |
+          echo "Cleaning all .terraform folders"
+          find . -type d -name ".terraform" -exec rm -rf {} +
+          rm -f .terraform.lock.hcl || true
 
-      - name: Plan
-        run: terraform -chdir=infrastructure/${{ matrix.module }} plan
->>>>>>> d8865651a6f43ebeda978248e947cfebf5ba959d
+      - name: 🌍 Set tfvars file based on branch
+        id: tfvars
+        run: |
+          echo "Branch: $GITHUB_REF_NAME"
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            echo "TFVARS=prod.tfvars" >> $GITHUB_ENV
+          elif [ "$GITHUB_REF_NAME" = "qa" ]; then
+            echo "TFVARS=qa.tfvars" >> $GITHUB_ENV
+          else
+            echo "TFVARS=dev.tfvars" >> $GITHUB_ENV
+          fi
+
+      # EC2 Module
+      - name: ⚙️ Terraform Init EC2
+        run: terraform init
+        working-directory: infrastructure/ec2
+
+      - name: 🧪 Terraform Validate EC2
+        run: terraform validate
+        working-directory: infrastructure/ec2
+
+      - name: 📋 Terraform Plan EC2
+        run: terraform plan -var-file=${{ env.TFVARS }}
+        working-directory: infrastructure/ec2
+
+      # S3 Module
+      - name: ⚙️ Terraform Init S3
+        run: terraform init
+        working-directory: infrastructure/s3
+
+      - name: 🧪 Terraform Validate S3
+        run: terraform validate
+        working-directory: infrastructure/s3
+
+      - name: 📋 Terraform Plan S3
+        run: terraform plan -var-file=${{ env.TFVARS }}
+        working-directory: infrastructure/s3
+
+      - name: ✅ Set workflow success output
+        id: set_output
+        run: echo "terraform_status=success" >> $GITHUB_ENV
