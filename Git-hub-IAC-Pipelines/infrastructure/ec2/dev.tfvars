@@ -5,6 +5,6 @@ subnet_id     = "subnet-0123456789abcdef0"
 security_group_ids = ["sg-0123456789abcdef0"]
 
 tags = {
-  Name        = "ec2-dev-v2"     # 🔧 Changed tag to trigger CI/CD
+  Name        = "ec2-dev-v3"
   Environment = "dev"
 }
