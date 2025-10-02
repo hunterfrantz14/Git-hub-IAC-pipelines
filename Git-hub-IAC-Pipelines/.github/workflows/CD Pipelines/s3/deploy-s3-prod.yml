@@ -27,8 +27,22 @@ jobs:
         with:
           terraform_version: 1.5.7
 
-      - name: Terraform Init
-        run: terraform init
+      - name: DEBUG: List all .tf files
+        run: |
+          echo "🔍 Listing .tf files in infrastructure/s3:"
+          find . -name "*.tf"
+
+      - name: 🧹 Full Terraform cleanup
+        run: |
+          echo "🔥 Removing all Terraform state & cached modules..."
+          rm -rf .terraform
+          rm -f .terraform.lock.hcl
+          rm -f terraform.tfstate
+          rm -f terraform.tfstate.backup
+          echo "✅ Cleanup complete"
+
+      - name: Terraform Init (fresh modules)
+        run: terraform init -upgrade -no-color
 
       - name: Terraform Plan
         run: terraform plan -var-file="prod.tfvars"
