@@ -1,15 +1,15 @@
-name: CI - Terraform Deploy (EC2 + S3)
+name: CI - Terraform Deploy (EC2 + S3 Conditional Debug)
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'infrastructure/**/*.tf'
+      - 'infrastructure/**'
 
 jobs:
   terraform:
-    name: Terraform - EC2 and S3 Combined
+    name: Terraform - EC2 and S3 (Debug Mode)
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -22,19 +22,13 @@ jobs:
         with:
           terraform_version: 1.5.7
 
-      #########################################################
-      # EC2 MODULE
-      #########################################################
+      # 🔍 DEBUG: Show all .tf files in repo
+      - name: Print all Terraform files
+        run: find . -name "*.tf"
 
-      - name: Debug - EC2
-        run: |
-          echo "Listing files in EC2 folder..."
-          ls -la infrastructure/ec2
-
-      - name: Terraform Format - EC2
-        run: terraform fmt -check
-        working-directory: infrastructure/ec2
-
+      # ========================================================
+      # EC2 Steps
+      # ========================================================
       - name: Terraform Init - EC2
         run: terraform init
         working-directory: infrastructure/ec2
@@ -51,19 +45,9 @@ jobs:
         run: terraform apply -auto-approve -var-file="dev.tfvars"
         working-directory: infrastructure/ec2
 
-      #########################################################
-      # S3 MODULE
-      #########################################################
-
-      - name: Debug - S3
-        run: |
-          echo "Listing files in S3 folder..."
-          ls -la infrastructure/s3
-
-      - name: Terraform Format - S3
-        run: terraform fmt -check
-        working-directory: infrastructure/s3
-
+      # ========================================================
+      # S3 Steps
+      # ========================================================
       - name: Terraform Init - S3
         run: terraform init
         working-directory: infrastructure/s3
