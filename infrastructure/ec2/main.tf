@@ -1,5 +1,5 @@
 module "ec2" {
-  source = "../../modules/aws/ec2"   # adjust path if needed
+  source        = "git::https://github.com/hunterfrantz14/Modules.git//aws/ec2?ref=main"
 
   instance_name = var.instance_name
   instance_type = var.instance_type

@@ -1,5 +1,5 @@
 module "s3" {
-  source = "../../modules/aws/s3"   # adjust path if needed
+  source = "git::https://github.com/hunterfrantz14/Modules.git//aws/s3?ref=main"
 
   bucket_name = var.bucket_name
   acl         = var.acl
