@@ -1,4 +1,4 @@
-name: CI - Terraform Deploy (EC2 + S3 Conditional Debug)
+name: CI - Terraform Deploy (EC2 + S3 Debug)
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   terraform:
-    name: Terraform - EC2 and S3 (Debug Mode)
+    name: Terraform - EC2 and S3
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -22,20 +22,23 @@ jobs:
         with:
           terraform_version: 1.5.7
 
-      - name: DEBUG: List files in infrastructure
+      # 🔍 DEBUG: Show file structure and any stale terraform modules
+      - name: DEBUG: List .tf files and folders
         run: |
-          echo "Listing everything under infrastructure/"
-          find infrastructure/
-
-      - name: DEBUG: Find all Terraform files
-        run: |
-          echo "Searching for .tf files..."
+          echo "📂 All .tf files in the repo:"
           find . -name "*.tf"
-          echo "Done listing .tf files."
+          echo ""
+          echo "📁 Contents of .terraform folder (if any):"
+          ls -R infrastructure/ec2/.terraform || echo "No .terraform directory found"
+
+      # =======================================
+      # EC2 STEPS
+      # =======================================
 
       - name: Terraform Init - EC2
-        run: terraform init
+        run: terraform init -no-color -input=false -upgrade
         working-directory: infrastructure/ec2
+        continue-on-error: true
 
       - name: Terraform Validate - EC2
         run: terraform validate
@@ -48,6 +51,10 @@ jobs:
       - name: Terraform Apply - EC2
         run: terraform apply -auto-approve -var-file="dev.tfvars"
         working-directory: infrastructure/ec2
+
+      # =======================================
+      # S3 STEPS
+      # =======================================
 
       - name: Terraform Init - S3
         run: terraform init
