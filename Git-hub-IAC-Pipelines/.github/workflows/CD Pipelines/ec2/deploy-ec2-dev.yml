@@ -27,22 +27,15 @@ jobs:
         with:
           terraform_version: 1.5.7
 
-      - name: DEBUG: Print contents of all .tf files
+      - name: 🔥 Hard Reset Terraform (wipe all cache, modules, state)
         run: |
-          echo "📂 Dumping contents of all Terraform files:"
-          find . -name "*.tf" -exec echo "--- {} ---" \; -exec cat {} \; -exec echo "" \;
-
-      - name: 🔥 Full Terraform cleanup
-        run: |
-          echo "Removing all Terraform state & cached modules..."
+          echo "🧹 Cleaning all Terraform state and caches"
           rm -rf .terraform
           rm -f .terraform.lock.hcl
           rm -f terraform.tfstate
           rm -f terraform.tfstate.backup
-          echo "✅ Cleanup complete"
-
-      - name: Terraform Init (force fresh modules)
-        run: terraform init -upgrade -no-color
+          terraform init -upgrade
+          echo "✅ Clean init complete"
 
       - name: Terraform Plan
         run: terraform plan -var-file="dev.tfvars"
